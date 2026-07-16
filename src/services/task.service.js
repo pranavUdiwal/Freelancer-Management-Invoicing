@@ -2,9 +2,14 @@ const taskRepository = require('../repositories/task.repository');
 const projectRepository = require('../repositories/project.repository');
 const authRepository = require('../repositories/auth.repository');
 const AppError = require('../utils/AppError');
+const BaseService = require('./base.service');
 
-class TaskService {
-  async createTask(data) {
+class TaskService extends BaseService {
+  constructor() {
+    super(taskRepository);
+  }
+
+  async create(data) {
     const project = await projectRepository.findById(data.projectId);
     if (!project) {
       throw new AppError('Project not found', 404);
@@ -20,21 +25,18 @@ class TaskService {
       }
     }
 
-    return await taskRepository.create(data);
+    return super.create(data);
   }
 
   async getAllTasks(currentUser) {
     if (currentUser.role === 'freelancer') {
-      return await taskRepository.findAll({ assignedTo: currentUser.id });
+      return await this.repository.findAll({ assignedTo: currentUser.id });
     }
-    return await taskRepository.findAll();
+    return await super.getAll();
   }
 
   async getTaskById(id, currentUser) {
-    const task = await taskRepository.findById(id);
-    if (!task) {
-      throw new AppError('Task not found', 404);
-    }
+    const task = await super.getById(id);
 
     if (currentUser.role === 'freelancer' && task.assignedTo !== currentUser.id) {
       throw new AppError('You do not have permission to view this task', 403);
@@ -44,10 +46,7 @@ class TaskService {
   }
 
   async updateTask(id, data, currentUser) {
-    const task = await taskRepository.findById(id);
-    if (!task) {
-      throw new AppError('Task not found', 404);
-    }
+    const task = await super.getById(id);
 
     if (currentUser.role === 'freelancer') {
       if (task.assignedTo !== currentUser.id) {
@@ -79,16 +78,7 @@ class TaskService {
       }
     }
 
-    await taskRepository.update(id, data);
-    return await taskRepository.findById(id);
-  }
-
-  async deleteTask(id) {
-    const task = await taskRepository.findById(id);
-    if (!task) {
-      throw new AppError('Task not found', 404);
-    }
-    await taskRepository.delete(id);
+    return await super.update(id, data);
   }
 }
 

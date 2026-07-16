@@ -1,50 +1,37 @@
 const taskService = require('../services/task.service');
 const catchAsync = require('../utils/catchAsync');
+const BaseController = require('./base.controller');
 
-const createTask = catchAsync(async (req, res) => {
-  const task = await taskService.createTask(req.body);
-  res.status(201).json({
-    status: 'success',
-    data: { task },
+class TaskController extends BaseController {
+  constructor() {
+    super();
+    this.service = taskService;
+  }
+
+  createTask = catchAsync(async (req, res) => {
+    const task = await this.service.create(req.body);
+    return this.sendCreated(res, { task });
   });
-});
 
-const getAllTasks = catchAsync(async (req, res) => {
-  const tasks = await taskService.getAllTasks(req.user);
-  res.status(200).json({
-    status: 'success',
-    data: { tasks },
+  getAllTasks = catchAsync(async (req, res) => {
+    const tasks = await this.service.getAllTasks(req.user);
+    return this.sendSuccess(res, { tasks });
   });
-});
 
-const getTaskById = catchAsync(async (req, res) => {
-  const task = await taskService.getTaskById(req.params.id, req.user);
-  res.status(200).json({
-    status: 'success',
-    data: { task },
+  getTaskById = catchAsync(async (req, res) => {
+    const task = await this.service.getTaskById(req.params.id, req.user);
+    return this.sendSuccess(res, { task });
   });
-});
 
-const updateTask = catchAsync(async (req, res) => {
-  const task = await taskService.updateTask(req.params.id, req.body, req.user);
-  res.status(200).json({
-    status: 'success',
-    data: { task },
+  updateTask = catchAsync(async (req, res) => {
+    const task = await this.service.updateTask(req.params.id, req.body, req.user);
+    return this.sendSuccess(res, { task });
   });
-});
 
-const deleteTask = catchAsync(async (req, res) => {
-  await taskService.deleteTask(req.params.id);
-  res.status(204).json({
-    status: 'success',
-    data: null,
+  deleteTask = catchAsync(async (req, res) => {
+    await this.service.delete(req.params.id);
+    return this.sendNoContent(res);
   });
-});
+}
 
-module.exports = {
-  createTask,
-  getAllTasks,
-  getTaskById,
-  updateTask,
-  deleteTask,
-};
+module.exports = new TaskController();

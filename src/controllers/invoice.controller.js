@@ -1,50 +1,37 @@
 const invoiceService = require('../services/invoice.service');
 const catchAsync = require('../utils/catchAsync');
+const BaseController = require('./base.controller');
 
-const generateInvoice = catchAsync(async (req, res) => {
-  const invoice = await invoiceService.generateInvoice(req.body);
-  res.status(201).json({
-    status: 'success',
-    data: { invoice },
+class InvoiceController extends BaseController {
+  constructor() {
+    super();
+    this.service = invoiceService;
+  }
+
+  generateInvoice = catchAsync(async (req, res) => {
+    const invoice = await this.service.generateInvoice(req.body);
+    return this.sendCreated(res, { invoice });
   });
-});
 
-const getAllInvoices = catchAsync(async (req, res) => {
-  const invoices = await invoiceService.getAllInvoices();
-  res.status(200).json({
-    status: 'success',
-    data: { invoices },
+  getAllInvoices = catchAsync(async (req, res) => {
+    const invoices = await this.service.getAllInvoices();
+    return this.sendSuccess(res, { invoices });
   });
-});
 
-const getInvoiceById = catchAsync(async (req, res) => {
-  const invoice = await invoiceService.getInvoiceById(req.params.id, req.user);
-  res.status(200).json({
-    status: 'success',
-    data: { invoice },
+  getInvoiceById = catchAsync(async (req, res) => {
+    const invoice = await this.service.getInvoiceById(req.params.id, req.user);
+    return this.sendSuccess(res, { invoice });
   });
-});
 
-const updateInvoiceStatus = catchAsync(async (req, res) => {
-  const invoice = await invoiceService.updateInvoiceStatus(req.params.id, req.body.status);
-  res.status(200).json({
-    status: 'success',
-    data: { invoice },
+  updateInvoiceStatus = catchAsync(async (req, res) => {
+    const invoice = await this.service.updateInvoiceStatus(req.params.id, req.body.status);
+    return this.sendSuccess(res, { invoice });
   });
-});
 
-const detectOverdue = catchAsync(async (req, res) => {
-  const result = await invoiceService.detectOverdue();
-  res.status(200).json({
-    status: 'success',
-    data: result,
+  detectOverdue = catchAsync(async (req, res) => {
+    const result = await this.service.detectOverdue();
+    return this.sendSuccess(res, result);
   });
-});
+}
 
-module.exports = {
-  generateInvoice,
-  getAllInvoices,
-  getInvoiceById,
-  updateInvoiceStatus,
-  detectOverdue,
-};
+module.exports = new InvoiceController();

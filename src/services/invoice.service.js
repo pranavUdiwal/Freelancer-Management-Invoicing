@@ -4,8 +4,13 @@ const timeLogRepository = require('../repositories/timeLog.repository');
 const { TimeLog, Task, Invoice, sequelize } = require('../models');
 const { Op } = require('sequelize');
 const AppError = require('../utils/AppError');
+const BaseService = require('./base.service');
 
-class InvoiceService {
+class InvoiceService extends BaseService {
+  constructor() {
+    super(invoiceRepository);
+  }
+
   async generateInvoice(data) {
     const project = await projectRepository.findById(data.projectId);
     if (!project) {
@@ -46,11 +51,11 @@ class InvoiceService {
       const date = String(today.getDate()).padStart(2, '0');
       const dateStr = `${year}${month}${date}`;
 
-      const todayCount = await invoiceRepository.countToday();
+      const todayCount = await this.repository.countToday();
       const counter = String(todayCount + 1).padStart(4, '0');
       const invoiceNumber = `INV-${dateStr}-${counter}`;
 
-      const invoice = await invoiceRepository.create({
+      const invoice = await super.create({
         invoiceNumber,
         projectId: data.projectId,
         clientId: project.clientId,
@@ -74,22 +79,15 @@ class InvoiceService {
       }
 
       await transaction.commit();
-      return await invoiceRepository.findById(invoice.id);
+      return await super.getById(invoice.id);
     } catch (error) {
       await transaction.rollback();
       throw error;
     }
   }
 
-  async getAllInvoices() {
-    return await invoiceRepository.findAll();
-  }
-
   async getInvoiceById(id, currentUser) {
-    const invoice = await invoiceRepository.findById(id);
-    if (!invoice) {
-      throw new AppError('Invoice not found', 404);
-    }
+    const invoice = await super.getById(id);
 
     if (currentUser.role === 'freelancer') {
       const logs = await TimeLog.findAll({
@@ -104,10 +102,7 @@ class InvoiceService {
   }
 
   async updateInvoiceStatus(id, status) {
-    const invoice = await invoiceRepository.findById(id);
-    if (!invoice) {
-      throw new AppError('Invoice not found', 404);
-    }
+    const invoice = await super.getById(id);
 
     const transaction = await sequelize.transaction();
     try {
@@ -125,10 +120,10 @@ class InvoiceService {
         });
       }
 
-      await invoiceRepository.update(id, updateData, { transaction });
+      await this.repository.update(id, updateData, { transaction });
       await transaction.commit();
 
-      return await invoiceRepository.findById(id);
+      return await super.getById(id);
     } catch (error) {
       await transaction.rollback();
       throw error;

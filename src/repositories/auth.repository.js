@@ -1,28 +1,17 @@
 const { User } = require('../models');
+const BaseRepository = require('./base.repository');
 
-class AuthRepository {
+class AuthRepository extends BaseRepository {
+  constructor() {
+    super(User);
+  }
+
   async findByEmail(email) {
-    return await User.scope('withPassword').findOne({ where: { email } });
-  }
-
-  async createUser(data) {
-    return await User.create(data);
-  }
-
-  async findById(id) {
-    return await User.findByPk(id);
+    return await this.model.scope('withPassword').findOne({ where: { email } });
   }
 
   async findByIdWithPassword(id) {
-    return await User.scope('withPassword').findByPk(id);
-  }
-
-  async updateUser(id, data) {
-    const [, [updatedUser]] = await User.update(data, {
-      where: { id },
-      returning: true,
-    });
-    return updatedUser;
+    return await this.model.scope('withPassword').findByPk(id);
   }
 }
 

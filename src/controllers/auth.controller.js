@@ -1,50 +1,37 @@
 const authService = require('../services/auth.service');
 const catchAsync = require('../utils/catchAsync');
+const BaseController = require('./base.controller');
 
-const register = catchAsync(async (req, res) => {
-  const result = await authService.register(req.body);
-  res.status(201).json({
-    status: 'success',
-    data: result,
+class AuthController extends BaseController {
+  constructor() {
+    super();
+    this.service = authService;
+  }
+
+  register = catchAsync(async (req, res) => {
+    const result = await this.service.register(req.body);
+    return this.sendCreated(res, result);
   });
-});
 
-const login = catchAsync(async (req, res) => {
-  const result = await authService.login(req.body);
-  res.status(200).json({
-    status: 'success',
-    data: result,
+  login = catchAsync(async (req, res) => {
+    const result = await this.service.login(req.body);
+    return this.sendSuccess(res, result);
   });
-});
 
-const getProfile = catchAsync(async (req, res) => {
-  const user = await authService.getProfile(req.user.id);
-  res.status(200).json({
-    status: 'success',
-    data: { user },
+  getProfile = catchAsync(async (req, res) => {
+    const user = await this.service.getProfile(req.user.id);
+    return this.sendSuccess(res, { user });
   });
-});
 
-const updateProfile = catchAsync(async (req, res) => {
-  const updatedUser = await authService.updateProfile(req.user.id, req.body);
-  res.status(200).json({
-    status: 'success',
-    data: { user: updatedUser },
+  updateProfile = catchAsync(async (req, res) => {
+    const updatedUser = await this.service.updateProfile(req.user.id, req.body);
+    return this.sendSuccess(res, { user: updatedUser });
   });
-});
 
-const changePassword = catchAsync(async (req, res) => {
-  await authService.changePassword(req.user.id, req.body);
-  res.status(200).json({
-    status: 'success',
-    message: 'Password updated successfully',
+  changePassword = catchAsync(async (req, res) => {
+    await this.service.changePassword(req.user.id, req.body);
+    return this.sendSuccess(res, null, 200, 'Password updated successfully');
   });
-});
+}
 
-module.exports = {
-  register,
-  login,
-  getProfile,
-  updateProfile,
-  changePassword,
-};
+module.exports = new AuthController();

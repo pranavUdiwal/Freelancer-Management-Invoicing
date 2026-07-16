@@ -1,50 +1,37 @@
 const projectService = require('../services/project.service');
 const catchAsync = require('../utils/catchAsync');
+const BaseController = require('./base.controller');
 
-const createProject = catchAsync(async (req, res) => {
-  const project = await projectService.createProject(req.body);
-  res.status(201).json({
-    status: 'success',
-    data: { project },
+class ProjectController extends BaseController {
+  constructor() {
+    super();
+    this.service = projectService;
+  }
+
+  createProject = catchAsync(async (req, res) => {
+    const project = await this.service.create(req.body);
+    return this.sendCreated(res, { project });
   });
-});
 
-const getAllProjects = catchAsync(async (req, res) => {
-  const projects = await projectService.getAllProjects();
-  res.status(200).json({
-    status: 'success',
-    data: { projects },
+  getAllProjects = catchAsync(async (req, res) => {
+    const projects = await this.service.getAll();
+    return this.sendSuccess(res, { projects });
   });
-});
 
-const getProjectById = catchAsync(async (req, res) => {
-  const project = await projectService.getProjectById(req.params.id);
-  res.status(200).json({
-    status: 'success',
-    data: { project },
+  getProjectById = catchAsync(async (req, res) => {
+    const project = await this.service.getById(req.params.id);
+    return this.sendSuccess(res, { project });
   });
-});
 
-const updateProject = catchAsync(async (req, res) => {
-  const project = await projectService.updateProject(req.params.id, req.body);
-  res.status(200).json({
-    status: 'success',
-    data: { project },
+  updateProject = catchAsync(async (req, res) => {
+    const project = await this.service.update(req.params.id, req.body);
+    return this.sendSuccess(res, { project });
   });
-});
 
-const deleteProject = catchAsync(async (req, res) => {
-  await projectService.deleteProject(req.params.id);
-  res.status(204).json({
-    status: 'success',
-    data: null,
+  deleteProject = catchAsync(async (req, res) => {
+    await this.service.delete(req.params.id);
+    return this.sendNoContent(res);
   });
-});
+}
 
-module.exports = {
-  createProject,
-  getAllProjects,
-  getProjectById,
-  updateProject,
-  deleteProject,
-};
+module.exports = new ProjectController();

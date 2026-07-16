@@ -2,16 +2,21 @@ const bcrypt = require('bcryptjs');
 const AppError = require('../utils/AppError');
 const authRepository = require('../repositories/auth.repository');
 const { signToken } = require('../utils/jwt');
+const BaseService = require('./base.service');
 
-class AuthService {
+class AuthService extends BaseService {
+  constructor() {
+    super(authRepository);
+  }
+
   async register(data) {
-    const existingUser = await authRepository.findByEmail(data.email);
+    const existingUser = await this.repository.findByEmail(data.email);
     if (existingUser) {
       throw new AppError('Email already registered', 400);
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
-    const user = await authRepository.createUser({
+    const user = await this.repository.create({
       ...data,
       password: hashedPassword,
     });
@@ -24,7 +29,7 @@ class AuthService {
   }
 
   async login(data) {
-    const user = await authRepository.findByEmail(data.email);
+    const user = await this.repository.findByEmail(data.email);
     if (!user) {
       throw new AppError('Invalid email or password', 401);
     }
@@ -46,16 +51,12 @@ class AuthService {
   }
 
   async getProfile(userId) {
-    const user = await authRepository.findById(userId);
-    if (!user) {
-      throw new AppError('User not found', 404);
-    }
-    return user;
+    return await this.getById(userId);
   }
 
   async updateProfile(userId, data) {
     if (data.email) {
-      const userWithEmail = await authRepository.findByEmail(data.email);
+      const userWithEmail = await this.repository.findByEmail(data.email);
       if (userWithEmail && userWithEmail.id !== userId) {
         throw new AppError('Email is already in use', 400);
       }
@@ -65,12 +66,11 @@ class AuthService {
     if (data.name) updateData.name = data.name;
     if (data.email) updateData.email = data.email;
 
-    await authRepository.updateUser(userId, updateData);
-    return await authRepository.findById(userId);
+    return await this.update(userId, updateData);
   }
 
   async changePassword(userId, data) {
-    const user = await authRepository.findByIdWithPassword(userId);
+    const user = await this.repository.findByIdWithPassword(userId);
     if (!user) {
       throw new AppError('User not found', 404);
     }
@@ -81,7 +81,7 @@ class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(data.newPassword, 10);
-    await authRepository.updateUser(userId, { password: hashedPassword });
+    await this.update(userId, { password: hashedPassword });
   }
 }
 

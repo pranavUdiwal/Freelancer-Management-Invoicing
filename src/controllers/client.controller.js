@@ -1,50 +1,37 @@
 const clientService = require('../services/client.service');
 const catchAsync = require('../utils/catchAsync');
+const BaseController = require('./base.controller');
 
-const createClient = catchAsync(async (req, res) => {
-  const client = await clientService.createClient(req.body);
-  res.status(201).json({
-    status: 'success',
-    data: { client },
+class ClientController extends BaseController {
+  constructor() {
+    super();
+    this.service = clientService;
+  }
+
+  createClient = catchAsync(async (req, res) => {
+    const client = await this.service.create(req.body);
+    return this.sendCreated(res, { client });
   });
-});
 
-const getAllClients = catchAsync(async (req, res) => {
-  const clients = await clientService.getAllClients();
-  res.status(200).json({
-    status: 'success',
-    data: { clients },
+  getAllClients = catchAsync(async (req, res) => {
+    const clients = await this.service.getAll();
+    return this.sendSuccess(res, { clients });
   });
-});
 
-const getClientById = catchAsync(async (req, res) => {
-  const client = await clientService.getClientById(req.params.id);
-  res.status(200).json({
-    status: 'success',
-    data: { client },
+  getClientById = catchAsync(async (req, res) => {
+    const client = await this.service.getById(req.params.id);
+    return this.sendSuccess(res, { client });
   });
-});
 
-const updateClient = catchAsync(async (req, res) => {
-  const client = await clientService.updateClient(req.params.id, req.body);
-  res.status(200).json({
-    status: 'success',
-    data: { client },
+  updateClient = catchAsync(async (req, res) => {
+    const client = await this.service.update(req.params.id, req.body);
+    return this.sendSuccess(res, { client });
   });
-});
 
-const deleteClient = catchAsync(async (req, res) => {
-  await clientService.deleteClient(req.params.id);
-  res.status(204).json({
-    status: 'success',
-    data: null,
+  deleteClient = catchAsync(async (req, res) => {
+    await this.service.delete(req.params.id);
+    return this.sendNoContent(res);
   });
-});
+}
 
-module.exports = {
-  createClient,
-  getAllClients,
-  getClientById,
-  updateClient,
-  deleteClient,
-};
+module.exports = new ClientController();

@@ -1,8 +1,13 @@
 const timeLogRepository = require('../repositories/timeLog.repository');
 const taskRepository = require('../repositories/task.repository');
 const AppError = require('../utils/AppError');
+const BaseService = require('./base.service');
 
-class TimeLogService {
+class TimeLogService extends BaseService {
+  constructor() {
+    super(timeLogRepository);
+  }
+
   async createTimeLog(data, currentUser) {
     const task = await taskRepository.findById(data.taskId);
     if (!task) {
@@ -22,7 +27,7 @@ class TimeLogService {
     const hours = (end - start) / 3600000;
     const computedHours = parseFloat(hours.toFixed(2));
 
-    return await timeLogRepository.create({
+    return await super.create({
       ...data,
       userId: currentUser.id,
       hours: computedHours,
@@ -31,16 +36,13 @@ class TimeLogService {
 
   async getAllTimeLogs(currentUser) {
     if (currentUser.role === 'freelancer') {
-      return await timeLogRepository.findAll({ userId: currentUser.id });
+      return await this.repository.findAll({ userId: currentUser.id });
     }
-    return await timeLogRepository.findAll();
+    return await super.getAll();
   }
 
   async getTimeLogById(id, currentUser) {
-    const log = await timeLogRepository.findById(id);
-    if (!log) {
-      throw new AppError('Time log not found', 404);
-    }
+    const log = await super.getById(id);
 
     if (currentUser.role === 'freelancer' && log.userId !== currentUser.id) {
       throw new AppError('You do not have permission to view this time log', 403);
@@ -50,10 +52,7 @@ class TimeLogService {
   }
 
   async updateTimeLog(id, data, currentUser) {
-    const log = await timeLogRepository.findById(id);
-    if (!log) {
-      throw new AppError('Time log not found', 404);
-    }
+    const log = await super.getById(id);
 
     if (currentUser.role === 'freelancer' && log.userId !== currentUser.id) {
       throw new AppError('You do not have permission to update this time log', 403);
@@ -75,14 +74,11 @@ class TimeLogService {
       updateData.hours = parseFloat(hours.toFixed(2));
     }
 
-    return await timeLogRepository.update(id, updateData);
+    return await super.update(id, updateData);
   }
 
   async deleteTimeLog(id, currentUser) {
-    const log = await timeLogRepository.findById(id);
-    if (!log) {
-      throw new AppError('Time log not found', 404);
-    }
+    const log = await super.getById(id);
 
     if (currentUser.role === 'freelancer' && log.userId !== currentUser.id) {
       throw new AppError('You do not have permission to delete this time log', 403);
@@ -92,7 +88,7 @@ class TimeLogService {
       throw new AppError('Cannot delete a billed time log', 400);
     }
 
-    await timeLogRepository.delete(id);
+    await super.delete(id);
   }
 }
 

@@ -1,49 +1,29 @@
 const clientRepository = require('../repositories/client.repository');
 const AppError = require('../utils/AppError');
+const BaseService = require('./base.service');
 
-class ClientService {
-  async createClient(data) {
-    const existingClient = await clientRepository.findByEmail(data.email);
+class ClientService extends BaseService {
+  constructor() {
+    super(clientRepository);
+  }
+
+  async create(data) {
+    const existingClient = await this.repository.findByEmail(data.email);
     if (existingClient) {
       throw new AppError('Email is already in use by another client', 400);
     }
-    return await clientRepository.create(data);
+    return super.create(data);
   }
 
-  async getAllClients() {
-    return await clientRepository.findAll();
-  }
-
-  async getClientById(id) {
-    const client = await clientRepository.findById(id);
-    if (!client) {
-      throw new AppError('Client not found', 404);
-    }
-    return client;
-  }
-
-  async updateClient(id, data) {
-    const client = await clientRepository.findById(id);
-    if (!client) {
-      throw new AppError('Client not found', 404);
-    }
-
+  async update(id, data) {
+    const client = await this.getById(id);
     if (data.email) {
-      const existingClient = await clientRepository.findByEmail(data.email);
+      const existingClient = await this.repository.findByEmail(data.email);
       if (existingClient && existingClient.id !== id) {
         throw new AppError('Email is already in use by another client', 400);
       }
     }
-
-    return await clientRepository.update(id, data);
-  }
-
-  async deleteClient(id) {
-    const client = await clientRepository.findById(id);
-    if (!client) {
-      throw new AppError('Client not found', 404);
-    }
-    await clientRepository.delete(id);
+    return super.update(id, data);
   }
 }
 

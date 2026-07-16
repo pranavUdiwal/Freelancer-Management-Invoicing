@@ -1,34 +1,23 @@
 const { TimeLog, Task } = require('../models');
+const BaseRepository = require('./base.repository');
 
-class TimeLogRepository {
-  async create(data) {
-    return await TimeLog.create(data);
+class TimeLogRepository extends BaseRepository {
+  constructor() {
+    super(TimeLog);
   }
 
-  async findAll(where = {}) {
-    return await TimeLog.findAll({
-      where,
+  async findAll(options = {}) {
+    return super.findAll({
       include: [{ model: Task, as: 'task', attributes: ['id', 'title'] }],
-    });
-  }
-
-  async findById(id) {
-    return await TimeLog.findByPk(id, {
-      include: [{ model: Task, as: 'task', attributes: ['id', 'title'] }],
-    });
-  }
-
-  async update(id, data, options = {}) {
-    const [, [updatedTimeLog]] = await TimeLog.update(data, {
-      where: { id },
-      returning: true,
       ...options,
     });
-    return updatedTimeLog;
   }
 
-  async delete(id) {
-    return await TimeLog.destroy({ where: { id } });
+  async findById(id, options = {}) {
+    return super.findById(id, {
+      include: [{ model: Task, as: 'task', attributes: ['id', 'title'] }],
+      ...options,
+    });
   }
 }
 

@@ -1,7 +1,12 @@
 const { Invoice, TimeLog, Project, Client, sequelize } = require('../models');
+const BaseRepository = require('./base.repository');
 const { Op } = require('sequelize');
 
-class AnalyticsRepository {
+class AnalyticsRepository extends BaseRepository {
+  constructor() {
+    super(null);
+  }
+
   async getTotalRevenue() {
     const sum = await Invoice.sum('finalAmount', { where: { status: 'paid' } });
     return parseFloat(sum || 0);

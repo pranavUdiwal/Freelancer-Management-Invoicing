@@ -1,12 +1,17 @@
+const BaseService = require('./base.service');
 const analyticsRepository = require('../repositories/analytics.repository');
 
-class AnalyticsService {
+class AnalyticsService extends BaseService {
+  constructor() {
+    super(analyticsRepository);
+  }
+
   async getDashboardStats() {
-    const totalRevenue = await analyticsRepository.getTotalRevenue();
-    const totalBilledHours = await analyticsRepository.getTotalBilledHours();
-    const totalUnbilledHours = await analyticsRepository.getTotalUnbilledHours();
-    const projectStatsRaw = await analyticsRepository.getProjectStats();
-    const clientProfitability = await analyticsRepository.getClientProfitability();
+    const totalRevenue = await this.repository.getTotalRevenue();
+    const totalBilledHours = await this.repository.getTotalBilledHours();
+    const totalUnbilledHours = await this.repository.getTotalUnbilledHours();
+    const projectStatsRaw = await this.repository.getProjectStats();
+    const clientProfitability = await this.repository.getClientProfitability();
 
     const projectsByStatus = {
       not_started: 0,

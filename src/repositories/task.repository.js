@@ -1,39 +1,29 @@
 const { Task, Project, User } = require('../models');
+const BaseRepository = require('./base.repository');
 
-class TaskRepository {
-  async create(data) {
-    return await Task.create(data);
+class TaskRepository extends BaseRepository {
+  constructor() {
+    super(Task);
   }
 
-  async findAll(where = {}) {
-    return await Task.findAll({
-      where,
+  async findAll(options = {}) {
+    return super.findAll({
       include: [
         { model: Project, as: 'project', attributes: ['id', 'title'] },
         { model: User, as: 'assignee', attributes: ['id', 'name', 'role'] },
       ],
+      ...options,
     });
   }
 
-  async findById(id) {
-    return await Task.findByPk(id, {
+  async findById(id, options = {}) {
+    return super.findById(id, {
       include: [
         { model: Project, as: 'project', attributes: ['id', 'title'] },
         { model: User, as: 'assignee', attributes: ['id', 'name', 'role'] },
       ],
+      ...options,
     });
-  }
-
-  async update(id, data) {
-    const [, [updatedTask]] = await Task.update(data, {
-      where: { id },
-      returning: true,
-    });
-    return updatedTask;
-  }
-
-  async delete(id) {
-    return await Task.destroy({ where: { id } });
   }
 }
 

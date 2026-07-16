@@ -1,32 +1,13 @@
 const { Client } = require('../models');
+const BaseRepository = require('./base.repository');
 
-class ClientRepository {
-  async create(data) {
-    return await Client.create(data);
-  }
-
-  async findAll() {
-    return await Client.findAll();
-  }
-
-  async findById(id) {
-    return await Client.findByPk(id);
+class ClientRepository extends BaseRepository {
+  constructor() {
+    super(Client);
   }
 
   async findByEmail(email) {
-    return await Client.findOne({ where: { email } });
-  }
-
-  async update(id, data) {
-    const [, [updatedClient]] = await Client.update(data, {
-      where: { id },
-      returning: true,
-    });
-    return updatedClient;
-  }
-
-  async delete(id) {
-    return await Client.destroy({ where: { id } });
+    return await this.findOne({ email });
   }
 }
 

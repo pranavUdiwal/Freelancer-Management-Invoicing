@@ -1,50 +1,37 @@
 const timeLogService = require('../services/timeLog.service');
 const catchAsync = require('../utils/catchAsync');
+const BaseController = require('./base.controller');
 
-const createTimeLog = catchAsync(async (req, res) => {
-  const timeLog = await timeLogService.createTimeLog(req.body, req.user);
-  res.status(201).json({
-    status: 'success',
-    data: { timeLog },
+class TimeLogController extends BaseController {
+  constructor() {
+    super();
+    this.service = timeLogService;
+  }
+
+  createTimeLog = catchAsync(async (req, res) => {
+    const timeLog = await this.service.createTimeLog(req.body, req.user);
+    return this.sendCreated(res, { timeLog });
   });
-});
 
-const getAllTimeLogs = catchAsync(async (req, res) => {
-  const timeLogs = await timeLogService.getAllTimeLogs(req.user);
-  res.status(200).json({
-    status: 'success',
-    data: { timeLogs },
+  getAllTimeLogs = catchAsync(async (req, res) => {
+    const timeLogs = await this.service.getAllTimeLogs(req.user);
+    return this.sendSuccess(res, { timeLogs });
   });
-});
 
-const getTimeLogById = catchAsync(async (req, res) => {
-  const timeLog = await timeLogService.getTimeLogById(req.params.id, req.user);
-  res.status(200).json({
-    status: 'success',
-    data: { timeLog },
+  getTimeLogById = catchAsync(async (req, res) => {
+    const timeLog = await this.service.getTimeLogById(req.params.id, req.user);
+    return this.sendSuccess(res, { timeLog });
   });
-});
 
-const updateTimeLog = catchAsync(async (req, res) => {
-  const timeLog = await timeLogService.updateTimeLog(req.params.id, req.body, req.user);
-  res.status(200).json({
-    status: 'success',
-    data: { timeLog },
+  updateTimeLog = catchAsync(async (req, res) => {
+    const timeLog = await this.service.updateTimeLog(req.params.id, req.body, req.user);
+    return this.sendSuccess(res, { timeLog });
   });
-});
 
-const deleteTimeLog = catchAsync(async (req, res) => {
-  await timeLogService.deleteTimeLog(req.params.id, req.user);
-  res.status(204).json({
-    status: 'success',
-    data: null,
+  deleteTimeLog = catchAsync(async (req, res) => {
+    await this.service.deleteTimeLog(req.params.id, req.user);
+    return this.sendNoContent(res);
   });
-});
+}
 
-module.exports = {
-  createTimeLog,
-  getAllTimeLogs,
-  getTimeLogById,
-  updateTimeLog,
-  deleteTimeLog,
-};
+module.exports = new TimeLogController();

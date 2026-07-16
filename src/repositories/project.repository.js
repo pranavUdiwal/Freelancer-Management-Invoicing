@@ -1,32 +1,23 @@
 const { Project, Client } = require('../models');
+const BaseRepository = require('./base.repository');
 
-class ProjectRepository {
-  async create(data) {
-    return await Project.create(data);
+class ProjectRepository extends BaseRepository {
+  constructor() {
+    super(Project);
   }
 
-  async findAll() {
-    return await Project.findAll({
+  async findAll(options = {}) {
+    return super.findAll({
       include: [{ model: Client, as: 'client', attributes: ['id', 'name', 'company'] }],
+      ...options,
     });
   }
 
-  async findById(id) {
-    return await Project.findByPk(id, {
+  async findById(id, options = {}) {
+    return super.findById(id, {
       include: [{ model: Client, as: 'client', attributes: ['id', 'name', 'company'] }],
+      ...options,
     });
-  }
-
-  async update(id, data) {
-    const [, [updatedProject]] = await Project.update(data, {
-      where: { id },
-      returning: true,
-    });
-    return updatedProject;
-  }
-
-  async delete(id) {
-    return await Project.destroy({ where: { id } });
   }
 }
 
